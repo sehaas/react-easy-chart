@@ -1,5 +1,5 @@
 import React from 'react';
-import { event as d3LastEvent, select, svg, layout, scale} from 'd3';
+import { event as d3LastEvent, select, svg, layout, scale, interpolate } from 'd3';
 import { createElement } from 'react-faux-dom';
 import { Style } from 'radium';
 import merge from 'lodash.merge';
@@ -85,10 +85,22 @@ export default class PieChart extends React.Component {
       .attr('d', arc)
       .attr('class', 'chart_lines')
       .style('fill', (d, i) => d.data.color ? d.data.color : color(i))
-      .on('mouseover', (d) => mouseOverHandler(d, d3LastEvent))
-      .on('mouseout', (d) => mouseOutHandler(d, d3LastEvent))
-      .on('mousemove', () => mouseMoveHandler(d3LastEvent))
-      .on('click', (d) => clickHandler(d, d3LastEvent));
+      .transition()
+      .duration(1000)
+      .attrTween('d', (end) => {
+        const start = {
+          startAngle: 0,
+          endAngle: 0
+        };
+        const i = interpolate(start, end);
+        return function (d) {
+          return arc(i(d));
+        };
+      });
+      //.on('mouseover', (d) => mouseOverHandler(d, d3LastEvent))
+      //.on('mouseout', (d) => mouseOutHandler(d, d3LastEvent))
+      //.on('mousemove', () => mouseMoveHandler(d3LastEvent))
+      //.on('click', (d) => clickHandler(d, d3LastEvent));
 
     if (labels) {
       g.append('text')
