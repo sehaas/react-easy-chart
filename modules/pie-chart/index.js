@@ -50,9 +50,6 @@ export default class PieChart extends React.Component {
 
   render() {
     const {
-      mouseOverHandler,
-      mouseOutHandler,
-      mouseMoveHandler,
       clickHandler,
       styles,
       innerHoleSize,
@@ -97,10 +94,6 @@ export default class PieChart extends React.Component {
           return arc(i(d));
         };
       });
-      //.on('mouseover', (d) => mouseOverHandler(d, d3LastEvent))
-      //.on('mouseout', (d) => mouseOutHandler(d, d3LastEvent))
-      //.on('mousemove', () => mouseMoveHandler(d3LastEvent))
-      //.on('click', (d) => clickHandler(d, d3LastEvent));
 
     if (labels) {
       g.append('text')
