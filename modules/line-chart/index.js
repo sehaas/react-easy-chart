@@ -1,7 +1,7 @@
 import React from 'react';
 import {createElement} from 'react-faux-dom';
 import {reduce, calcMargin, getValueFunction, getRandomId, setLineDomainAndRange} from '../shared';
-import {select, svg, time, event as d3LastEvent} from 'd3';
+import {select, svg} from 'd3';
 import {Style} from 'radium';
 import merge from 'lodash.merge';
 import {format} from 'd3-time-format';
@@ -118,109 +118,114 @@ export default class LineChart extends React.Component {
     this.uid = getRandomId();
   }
 
+  componentDidMount() {
+    this.myPath = select('svg')
+    .append('g')
+    .attr('clip-path', 'url(#clip)')
+    .append('path')
+    .attr('class', `line line0`)
+    .datum(this.props.data[0])
+    .attr('d', this.linePath);
+    // this.paths[0].datum(this.props.data[0]);
+    // this.props.data.map((dataElelment, i) => {
+    //   this.pathGroups[i].append('path');
+    // });
+    // .datum(dataElelment)
+    // .attr('class', `line line${i}`)
+    // .attr('d', this.linePath)
+    // this.drawPaths(this.props.data);
+  }
+
+  componentDidUpdate() {
+    // challenge is to add to the data element before this data is sent in
+    // this.props.data[0].pop(this.props.data[3]);
+    this.myPath
+    .attr('d', this.linePath)
+    .attr('transform', null)
+    .transition()
+      .duration(1000)
+      .ease('linear')
+      .attr('transform', 'translate(-140, 0)');
+
+    // this.myPath.attr('transform', 'translate(-70, 0)');
+
+    // this.props.data.shift();
+    // this.props.data.shift();
+    // const tempData = prevProps.data.slice();
+    // tempData.map((dataElement) => {
+    //   // dataElement.push(this.props.data[i][this.props.data[i].length - 1]);
+    //   dataElement.shift();
+    // });
+    // this.updatePaths(this.props.data);
+  }
+
+  updatePaths() {
+    console.log(this.paths);
+  //   selectAll('.line')
+  //   // .attr('d', this.linePath)
+  //   .attr('transform', null)
+  // .transition()
+  //   .duration(100)
+  //   .ease('linear')
+  //   .attr('transform', 'translate(-70, 0)');
+  }
+
+  // drawPaths(data) {
+  //   selectAll('.line')
+  //   .datum(data)
+  //   .attr('d', (d, i) => {
+  //     return this.linePath(d[i]);
+  //   });
+  //   // selectAll('.line')
+  //   // .transition()
+  //   // .duration(400)
+  //   // .ease('linear')
+  //   // .attr('transform', `translate(-70 ,0)`);
+  // }
+
+
   render() {
     const {data,
       xType,
       yType,
       style,
       axes,
-      axisLabels,
       xDomainRange,
       yDomainRange,
-      xTicks,
-      yTicks,
-      interpolate,
-      grid,
-      tickTimeDisplayFormat,
-      mouseOverHandler,
-      mouseOutHandler,
-      mouseMoveHandler,
-      clickHandler,
-      dataPoints} = this.props;
+      interpolate
+    } = this.props;
     const margin = calcMargin(axes, this.props.margin);
     const width = reduce(this.props.width, margin.left, margin.right);
     const height = reduce(this.props.height, margin.top, margin.bottom);
 
-    const x = setLineDomainAndRange('x', xDomainRange, data, xType, width, this.parseDate);
+    this.x = setLineDomainAndRange('x', xDomainRange, data, xType, width, this.parseDate);
     const y = setLineDomainAndRange('y', yDomainRange, data, yType, height, this.parseDate);
 
     const yValue = getValueFunction('y', yType, this.parseDate);
     const xValue = getValueFunction('x', xType, this.parseDate);
-    const linePath = svg.line().interpolate(interpolate).x((d) => x(xValue(d))).y((d) => y(yValue(d)));
+    this.linePath = svg.line().interpolate(interpolate).x((d) => this.x(xValue(d))).y((d) => y(yValue(d)));
 
     const svgNode = createElement('svg');
+    select(svgNode)
+    .append('defs').append('clipPath')
+        .attr('id', 'clip')
+      .append('rect')
+        .attr('width', width)
+        .attr('height', height);
     select(svgNode).attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom);
-    const root = select(svgNode).append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-    if (axes) {
-      const xAxis = svg.axis().scale(x).orient('bottom');
-      if (xType === 'time' && tickTimeDisplayFormat) {
-        xAxis.tickFormat(time.format(tickTimeDisplayFormat));
-      }
-      if (grid) xAxis.tickSize(-height, 6).tickPadding(12);
-      if (xTicks) xAxis.ticks(xTicks);
-      root.append('g')
-        .attr('class', 'x axis')
-        .attr('transform', `translate(0,${height})`)
-        .call(xAxis)
-        .append('text')
-        .attr('class', 'label')
-        .attr('y', margin.bottom - 3)
-        .attr('x', (width))
-        .style('text-anchor', 'end')
-        .text(axisLabels.x);
-
-      const yAxis = svg.axis().scale(y).orient('left');
-      if (yType === 'time' && tickTimeDisplayFormat) {
-        yAxis.tickFormat(time.format(tickTimeDisplayFormat));
-      }
-      if (grid) yAxis.tickSize(-width, 6).tickPadding(12);
-      if (yTicks) yAxis.ticks(yTicks);
-      root.append('g')
-        .attr('class', 'y axis')
-        .call(yAxis)
-        .append('text')
-        .attr('class', 'label')
-        .attr('transform', 'rotate(-90)')
-        .attr('x', 0)
-        .attr('y', 0 - margin.left)
-        .attr('dy', '.9em')
-        .style('text-anchor', 'end')
-        .text(axisLabels.y);
-    }
-    data.map((dataElelment, i) => {
-      root.append('path')
-        .datum(dataElelment)
-        .attr('class', `line line${i}`)
-        .attr('d', linePath);
-      if (dataPoints) {
-        dataElelment.map((dotData) => {
-          root
-          .append('circle')
-          .attr('class', `dot dot${i}`)
-          .attr('cx', () => {
-            switch (xType) {
-              case ('time'):
-                return x(this.parseDate(dotData.x));
-              default:
-                return x(dotData.x);
-            }
-          })
-          .attr('cy', () => {
-            switch (yType) {
-              case ('time'):
-                return y(this.parseDate(dotData.y));
-              default:
-                return y(dotData.y);
-            }
-          })
-          .on('mouseover', () => mouseOverHandler(dotData, d3LastEvent))
-          .on('mouseout', () => mouseOutHandler(dotData, d3LastEvent))
-          .on('mousemove', () => mouseMoveHandler(d3LastEvent))
-          .on('click', () => clickHandler(dotData, d3LastEvent));
-        });
-      }
-    });
+    // this.pathGroups = [];
+    // data.map(() => {
+    //   var group = select(svgNode).append('g')
+    //   .attr('clip-path', 'url(#clip)')
+    //   .attr('transform', `translate(${margin.left},${margin.top})`);
+    //   // var newPath = group.append('path')
+    //   //   .datum(dataElelment)
+    //   //   .attr('class', `line line${i}`)
+    //   //   .attr('d', this.linePath)
+    //   //   ;
+    //   this.pathGroups.push(group);
+    // });
 
     return (
       <div className={`line-chart${this.uid}`}>
