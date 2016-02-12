@@ -19,5 +19,5 @@ app.listen(port, 'localhost', function(err) {
     }
     console.log('Listening at localhost:' + port);
     console.log('Opening your system browser...');
-    open('http://localhost:' + port + '/webpack-dev-server/');
+    open('http://localhost:' + port + '/');
   });

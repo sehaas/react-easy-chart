@@ -80,8 +80,8 @@ export default class HousePrices extends React.Component {
   render() {
     return (
       <div className="container" ref="component">
-        <h1>House prices</h1>
-        <p>A collection of scatterplot charts displaying <a href="http://www.nationwide.co.uk/about/house-price-index/download-data">data</a> of average UK house prices since 1953</p>
+        <h1>UK House prices</h1>
+        <p>A collection of scatterplot charts displaying <a href="http://www.nationwide.co.uk/about/house-price-index/download-data">Nationwide data</a> of average UK house prices since 1953</p>
         <h3>Average house price since 1953</h3>
         <p>The following chart plots the average house price with quarterly variation</p>
         <ScatterplotChart
