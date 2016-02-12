@@ -1,11 +1,5 @@
 export const housePriceData = [
   {
-    'Quarter': 'Q4 1952',
-    'Index': 100,
-    'Price': '1,891',
-    'Annual Change': 0
-  },
-  {
     'Quarter': 'Q1 1953',
     'Index': 100,
     'Price': '1,891',
